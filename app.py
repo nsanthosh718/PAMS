@@ -274,6 +274,12 @@ def athlete_app():
     user = get_current_user()
     return render_template('athlete_app.html', user=user)
 
+@app.route('/athlete/dashboard')
+@require_auth
+def athlete_dashboard():
+    user = get_current_user()
+    return render_template('athlete_dashboard.html', user=user)
+
 @app.route('/parent/athlete-view')
 def parent_athlete_view():
     return render_template('athlete_app.html')  # Parent can access athlete interface
