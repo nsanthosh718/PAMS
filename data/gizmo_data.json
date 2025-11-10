@@ -1,0 +1,16 @@
+{
+  "2025-11-09": {
+    "location_data": [
+      [
+        37.7749,
+        -122.4194
+      ]
+    ],
+    "activity_minutes": 85,
+    "screen_time": 45,
+    "parent_messages": 3,
+    "emergency_alerts": false,
+    "battery_level": 78,
+    "safe_zones": "safe"
+  }
+}

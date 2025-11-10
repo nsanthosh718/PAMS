@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PAMS - Welcome</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+        .container { max-width: 500px; padding: 40px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); text-align: center; animation: slideUp 0.6s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .logo { font-size: 4em; margin-bottom: 20px; animation: bounce 2s infinite; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-10px); } 60% { transform: translateY(-5px); } }
+        h1 { color: #2c3e50; margin-bottom: 10px; font-size: 2.5em; }
+        .subtitle { color: #7f8c8d; margin-bottom: 40px; font-size: 1.1em; }
+        .login-options { display: grid; gap: 20px; margin-bottom: 30px; }
+        .login-btn { padding: 25px; border: none; border-radius: 15px; font-size: 1.2em; font-weight: bold; cursor: pointer; text-decoration: none; display: block; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+        .login-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
+        .login-btn:hover::before { left: 100%; }
+        .parent-btn { background: linear-gradient(135deg, #3498db, #2980b9); color: white; box-shadow: 0 8px 25px rgba(52,152,219,0.3); }
+        .athlete-btn { background: linear-gradient(135deg, #e74c3c, #c0392b); color: white; box-shadow: 0 8px 25px rgba(231,76,60,0.3); }
+        .login-btn:hover { transform: translateY(-5px) scale(1.02); box-shadow: 0 15px 35px rgba(0,0,0,0.2); }
+        .login-btn:active { transform: translateY(-2px) scale(0.98); }
+        .features { text-align: left; background: rgba(248,249,250,0.8); backdrop-filter: blur(5px); padding: 25px; border-radius: 15px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.2); }
+        .feature { margin: 12px 0; color: #555; transition: color 0.3s; }
+        .feature:hover { color: #2c3e50; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🏆</div>
+        <h1>PAMS</h1>
+        <p class="subtitle">Parent Athlete Management System<br>"Predictable Excellence"</p>
+        
+        <div class="login-options">
+            <a href="/parent" class="login-btn parent-btn">
+                👨‍👩‍👧‍👦 Parent Portal
+                <div style="font-size: 0.8em; margin-top: 5px;">Monitor & Analytics</div>
+            </a>
+            <a href="/athlete/dashboard" class="login-btn athlete-btn">
+                ⚽ Athlete Dashboard
+                <div style="font-size: 0.8em; margin-top: 5px;">My Progress & Stats</div>
+            </a>
+        </div>
+
+        <div class="features">
+            <div class="feature">📊 Real-time Predictability Index</div>
+            <div class="feature">🤖 AI-powered insights & alerts</div>
+            <div class="feature">📅 Smart scheduling recommendations</div>
+            <div class="feature">💪 5-domain performance tracking</div>
+        </div>
+    </div>
+</body>
+</html>

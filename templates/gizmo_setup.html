@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PAMS - Connect Aadhi's Gizmo Watch</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        .header { background: rgba(44,62,80,0.9); backdrop-filter: blur(10px); color: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; text-align: center; }
+        .setup-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #2c3e50; }
+        input { width: 100%; padding: 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 16px; }
+        input:focus { border-color: #3498db; outline: none; }
+        .connect-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #27ae60, #2ecc71); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        .connect-btn:hover { background: linear-gradient(135deg, #229954, #27ae60); }
+        .status-card { padding: 15px; border-radius: 8px; margin: 15px 0; text-align: center; }
+        .connected { background: #d4edda; color: #155724; }
+        .disconnected { background: #f8d7da; color: #721c24; }
+        .instructions { background: #e3f2fd; padding: 20px; border-radius: 10px; margin: 20px 0; }
+        .step { margin: 10px 0; padding: 10px; background: #f8f9fa; border-radius: 6px; border-left: 4px solid #3498db; }
+        .nav-btn { padding: 12px 24px; margin: 0 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.3s ease; }
+        .primary-btn { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+        .secondary-btn { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⌚ Connect Aadhi's Gizmo Watch</h1>
+            <p>Real-time integration setup</p>
+        </div>
+
+        <div class="setup-card">
+            <h3>📱 Device Connection</h3>
+            <div id="connection-status" class="status-card disconnected">
+                ❌ Gizmo Watch Not Connected
+            </div>
+
+            <form id="gizmoSetupForm">
+                <div class="form-group">
+                    <label for="deviceId">🆔 Gizmo Watch Device ID</label>
+                    <input type="text" id="deviceId" placeholder="Enter device ID (e.g., GZ123456789)" required>
+                    <small style="color: #666;">Found in Gizmo app under Device Settings</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="phoneNumber">📞 Gizmo Phone Number</label>
+                    <input type="tel" id="phoneNumber" placeholder="Enter watch phone number" required>
+                    <small style="color: #666;">The phone number assigned to Aadhi's watch</small>
+                </div>
+
+                <button type="submit" class="connect-btn">🔗 Connect Aadhi's Watch</button>
+            </form>
+        </div>
+
+        <div class="setup-card">
+            <h3>📋 Setup Instructions</h3>
+            <div class="instructions">
+                <div class="step">
+                    <strong>Step 1:</strong> Open the GizmoHub app on your phone
+                </div>
+                <div class="step">
+                    <strong>Step 2:</strong> Go to Settings → Device Info to find the Device ID
+                </div>
+                <div class="step">
+                    <strong>Step 3:</strong> Note the phone number assigned to Aadhi's watch
+                </div>
+                <div class="step">
+                    <strong>Step 4:</strong> Enter both details above and click Connect
+                </div>
+                <div class="step">
+                    <strong>Step 5:</strong> PAMS will receive real-time data from the watch
+                </div>
+            </div>
+        </div>
+
+        <div class="setup-card">
+            <h3>🔄 Real-time Features</h3>
+            <p>Once connected, PAMS will automatically receive:</p>
+            <ul>
+                <li>📍 <strong>Live Location Updates</strong> - GPS tracking every 5 minutes</li>
+                <li>🏃 <strong>Activity Data</strong> - Steps, active minutes, heart rate</li>
+                <li>🔋 <strong>Battery Status</strong> - Real-time battery level monitoring</li>
+                <li>🛡️ <strong>Safety Alerts</strong> - Geofence and SOS notifications</li>
+                <li>💬 <strong>Messages</strong> - Two-way communication logs</li>
+                <li>📱 <strong>Screen Time</strong> - Daily usage tracking</li>
+            </ul>
+        </div>
+
+        <div style="text-align: center; margin-top: 25px;">
+            <a href="/phase2" class="nav-btn primary-btn">← Phase 2 Features</a>
+            <a href="/aadhi-gizmo" class="nav-btn primary-btn">View Dashboard</a>
+            <a href="/" class="nav-btn secondary-btn">🏠 Home</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('gizmoSetupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const deviceId = document.getElementById('deviceId').value;
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            
+            if (!deviceId || !phoneNumber) {
+                alert('Please enter both Device ID and Phone Number');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/gizmo-connect', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        device_id: deviceId,
+                        phone_number: phoneNumber
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    document.getElementById('connection-status').innerHTML = `
+                        ✅ Connected: ${result.device_id}
+                    `;
+                    document.getElementById('connection-status').className = 'status-card connected';
+                    
+                    alert(`🎉 Success! Aadhi's Gizmo watch is now connected to PAMS.\\n\\nDevice: ${result.device_id}\\n\\nReal-time data will start flowing within 5 minutes.`);
+                    
+                    // Clear form
+                    document.getElementById('gizmoSetupForm').reset();
+                } else {
+                    alert(`❌ Connection failed: ${result.error}`);
+                }
+            } catch (error) {
+                alert('❌ Connection error. Please check your internet connection and try again.');
+                console.error('Connection error:', error);
+            }
+        });
+
+        // Check existing connection on page load
+        async function checkConnection() {
+            try {
+                const response = await fetch('/api/gizmo-config');
+                if (response.ok) {
+                    const config = await response.json();
+                    if (config.status === 'connected') {
+                        document.getElementById('connection-status').innerHTML = `
+                            ✅ Connected: ${config.device_id}
+                        `;
+                        document.getElementById('connection-status').className = 'status-card connected';
+                    }
+                }
+            } catch (error) {
+                console.log('No existing connection found');
+            }
+        }
+
+        checkConnection();
+    </script>
+</body>
+</html>

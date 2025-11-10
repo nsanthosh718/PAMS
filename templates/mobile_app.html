@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PAMS Mobile - Aadhi's App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="PAMS">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+        .mobile-container { max-width: 375px; margin: 0 auto; background: white; min-height: 100vh; position: relative; }
+        .status-bar { background: #000; color: white; padding: 8px 15px; font-size: 14px; display: flex; justify-content: space-between; }
+        .app-header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; text-align: center; }
+        .quick-actions { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; padding: 20px; }
+        .action-card { background: #f8f9fa; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: transform 0.2s; }
+        .action-card:active { transform: scale(0.95); }
+        .action-icon { font-size: 2.5em; margin-bottom: 10px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 50%; transform: translateX(-50%); width: 375px; background: white; border-top: 1px solid #ddd; display: flex; }
+        .nav-item { flex: 1; padding: 15px; text-align: center; cursor: pointer; transition: background 0.2s; }
+        .nav-item:hover { background: #f0f0f0; }
+        .nav-item.active { background: #667eea; color: white; }
+        .content-area { padding: 20px; margin-bottom: 80px; }
+        .metric-card { background: white; border-radius: 12px; padding: 15px; margin: 10px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .metric-value { font-size: 1.8em; font-weight: bold; color: #3498db; }
+        .notification { background: #fff3cd; border: 1px solid #ffeaa7; padding: 12px; border-radius: 8px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="mobile-container">
+        <div class="status-bar">
+            <span>9:41 AM</span>
+            <span>📶 🔋 100%</span>
+        </div>
+
+        <div class="app-header">
+            <h2>⚽ PAMS Mobile</h2>
+            <p>Hey Aadhi! Ready for excellence?</p>
+        </div>
+
+        <div id="home-screen" class="content-area">
+            <div class="notification">
+                🎯 Today's Goal: Complete training + 8.5h sleep
+            </div>
+
+            <div class="quick-actions">
+                <div class="action-card" onclick="showCheckin()">
+                    <div class="action-icon">📝</div>
+                    <div>Daily Check-in</div>
+                </div>
+                <div class="action-card" onclick="showStats()">
+                    <div class="action-icon">📊</div>
+                    <div>My Stats</div>
+                </div>
+                <div class="action-card" onclick="showGoals()">
+                    <div class="action-icon">🎯</div>
+                    <div>Goals</div>
+                </div>
+                <div class="action-card" onclick="showTeam()">
+                    <div class="action-icon">👥</div>
+                    <div>Team</div>
+                </div>
+            </div>
+
+            <div class="metric-card">
+                <h4>Today's Progress</h4>
+                <div style="display: flex; justify-content: space-between;">
+                    <div>Sleep: <span class="metric-value">8.2h</span></div>
+                    <div>Mood: <span class="metric-value">4/5</span></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="checkin-screen" class="content-area" style="display: none;">
+            <h3>📝 Quick Check-in</h3>
+            <div class="metric-card">
+                <label>How are you feeling? (1-5)</label>
+                <div style="display: flex; gap: 10px; margin: 10px 0;">
+                    <button class="mood-btn" onclick="setMood(1)">😢</button>
+                    <button class="mood-btn" onclick="setMood(2)">😕</button>
+                    <button class="mood-btn" onclick="setMood(3)">😐</button>
+                    <button class="mood-btn" onclick="setMood(4)">😊</button>
+                    <button class="mood-btn" onclick="setMood(5)">😄</button>
+                </div>
+            </div>
+            <div class="metric-card">
+                <label>Training completed today?</label>
+                <div style="margin: 10px 0;">
+                    <button onclick="setTraining(true)" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; margin: 5px;">Yes ✅</button>
+                    <button onclick="setTraining(false)" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 6px; margin: 5px;">No ❌</button>
+                </div>
+            </div>
+            <button onclick="submitQuickCheckin()" style="width: 100%; background: #667eea; color: white; border: none; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold;">Submit Check-in</button>
+        </div>
+
+        <div id="stats-screen" class="content-area" style="display: none;">
+            <h3>📊 My Performance</h3>
+            <div class="metric-card">
+                <h4>This Week</h4>
+                <div>Training Sessions: <span class="metric-value">5/7</span></div>
+                <div>Average Sleep: <span class="metric-value">8.1h</span></div>
+                <div>Mood Score: <span class="metric-value">4.2/5</span></div>
+            </div>
+            <div class="metric-card">
+                <h4>🏆 Achievements</h4>
+                <div>🔥 5-day training streak</div>
+                <div>😴 Sleep goal met 6/7 days</div>
+                <div>💧 Hydration champion</div>
+            </div>
+        </div>
+
+        <div id="goals-screen" class="content-area" style="display: none;">
+            <h3>🎯 My Goals</h3>
+            <div class="metric-card">
+                <h4>Sleep Consistency</h4>
+                <div>Progress: <span class="metric-value">85%</span></div>
+                <div style="background: #ecf0f1; height: 8px; border-radius: 4px; margin: 8px 0;">
+                    <div style="background: #3498db; height: 100%; width: 85%; border-radius: 4px;"></div>
+                </div>
+            </div>
+            <div class="metric-card">
+                <h4>Training Excellence</h4>
+                <div>Progress: <span class="metric-value">92%</span></div>
+                <div style="background: #ecf0f1; height: 8px; border-radius: 4px; margin: 8px 0;">
+                    <div style="background: #27ae60; height: 100%; width: 92%; border-radius: 4px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="team-screen" class="content-area" style="display: none;">
+            <h3>👥 Team Updates</h3>
+            <div class="metric-card">
+                <strong>Coach Martinez</strong> - 2h ago<br>
+                Great work everyone! Tournament prep starts Monday 💪
+            </div>
+            <div class="metric-card">
+                <strong>Team Captain</strong> - 5h ago<br>
+                Who's ready for extra practice this weekend? 🔥
+            </div>
+            <div style="margin-top: 20px;">
+                <input type="text" id="team-message" placeholder="Share with team..." style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px;">
+                <button onclick="sendTeamMessage()" style="width: 100%; background: #28a745; color: white; border: none; padding: 12px; border-radius: 8px; margin-top: 10px;">Send Message</button>
+            </div>
+        </div>
+
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="showScreen('home')">
+                <div>🏠</div>
+                <div style="font-size: 12px;">Home</div>
+            </div>
+            <div class="nav-item" onclick="showScreen('checkin')">
+                <div>📝</div>
+                <div style="font-size: 12px;">Check-in</div>
+            </div>
+            <div class="nav-item" onclick="showScreen('stats')">
+                <div>📊</div>
+                <div style="font-size: 12px;">Stats</div>
+            </div>
+            <div class="nav-item" onclick="showScreen('team')">
+                <div>👥</div>
+                <div style="font-size: 12px;">Team</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentMood = 0;
+        let currentTraining = null;
+
+        function showScreen(screen) {
+            // Hide all screens
+            document.querySelectorAll('.content-area').forEach(el => el.style.display = 'none');
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            
+            // Show selected screen
+            document.getElementById(screen + '-screen').style.display = 'block';
+            event.target.closest('.nav-item').classList.add('active');
+        }
+
+        function showCheckin() {
+            showScreen('checkin');
+            document.querySelectorAll('.nav-item')[1].classList.add('active');
+            document.querySelectorAll('.nav-item')[0].classList.remove('active');
+        }
+
+        function showStats() {
+            showScreen('stats');
+            document.querySelectorAll('.nav-item')[2].classList.add('active');
+            document.querySelectorAll('.nav-item')[0].classList.remove('active');
+        }
+
+        function showGoals() {
+            showScreen('goals');
+        }
+
+        function showTeam() {
+            showScreen('team');
+            document.querySelectorAll('.nav-item')[3].classList.add('active');
+            document.querySelectorAll('.nav-item')[0].classList.remove('active');
+        }
+
+        function setMood(mood) {
+            currentMood = mood;
+            document.querySelectorAll('.mood-btn').forEach(btn => btn.style.background = '#f0f0f0');
+            event.target.style.background = '#667eea';
+            event.target.style.color = 'white';
+        }
+
+        function setTraining(completed) {
+            currentTraining = completed;
+            document.querySelectorAll('button').forEach(btn => {
+                if (btn.textContent.includes('Yes') || btn.textContent.includes('No')) {
+                    btn.style.opacity = '0.5';
+                }
+            });
+            event.target.style.opacity = '1';
+        }
+
+        function submitQuickCheckin() {
+            if (currentMood === 0 || currentTraining === null) {
+                alert('Please complete all fields');
+                return;
+            }
+
+            // Simulate API call
+            alert('✅ Check-in submitted! Great job today, Aadhi!');
+            
+            // Reset form
+            currentMood = 0;
+            currentTraining = null;
+            document.querySelectorAll('.mood-btn').forEach(btn => btn.style.background = '#f0f0f0');
+            
+            // Go back to home
+            showScreen('home');
+            document.querySelectorAll('.nav-item')[0].classList.add('active');
+            document.querySelectorAll('.nav-item')[1].classList.remove('active');
+        }
+
+        function sendTeamMessage() {
+            const input = document.getElementById('team-message');
+            const message = input.value.trim();
+            
+            if (message) {
+                alert('Message sent to team! 📤');
+                input.value = '';
+            }
+        }
+
+        // Add mobile-specific styles
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prevent zoom on input focus
+            document.querySelectorAll('input').forEach(input => {
+                input.addEventListener('focus', function() {
+                    document.querySelector('meta[name=viewport]').setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1');
+                });
+            });
+        });
+    </script>
+</body>
+</html>

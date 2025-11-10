@@ -1,0 +1,20 @@
+{
+  "2025-11-09": {
+    "device_id": "AADHI_GIZMO_001",
+    "location_data": [
+      [
+        37.7749,
+        -122.4194
+      ]
+    ],
+    "activity_minutes": 95,
+    "screen_time": 35,
+    "parent_messages": 2,
+    "emergency_alerts": false,
+    "battery_level": 82,
+    "safe_zones": "safe",
+    "steps_count": 8500,
+    "heart_rate": 72,
+    "training_location": "soccer_field"
+  }
+}

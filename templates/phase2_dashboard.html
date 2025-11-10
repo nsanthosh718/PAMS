@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PAMS - Phase 2 Features</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: rgba(44,62,80,0.9); backdrop-filter: blur(10px); color: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; text-align: center; }
+        .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; margin-bottom: 25px; }
+        .feature-card { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        .feature-title { color: #2c3e50; font-size: 1.4em; font-weight: bold; margin-bottom: 15px; }
+        .goal-item { background: #f8f9fa; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #3498db; }
+        .progress-bar { background: #ecf0f1; height: 8px; border-radius: 4px; margin: 8px 0; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #3498db, #2980b9); border-radius: 4px; transition: width 1s ease; }
+        .growth-metric { display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #eee; }
+        .metric-value { font-weight: bold; color: #27ae60; }
+        .competition-item { background: #fff3cd; padding: 12px; margin: 8px 0; border-radius: 6px; border-left: 4px solid #f39c12; }
+        .days-until { font-weight: bold; color: #e74c3c; }
+        .wearable-sync { background: #d4edda; padding: 15px; border-radius: 8px; margin: 10px 0; text-align: center; }
+        .sync-btn { background: #28a745; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .nav-buttons { text-align: center; margin-top: 25px; }
+        .nav-btn { padding: 12px 24px; margin: 0 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.3s ease; }
+        .primary-btn { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+        .secondary-btn { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; }
+        .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚀 PAMS Phase 2 Features</h1>
+            <p>Advanced athlete development tools</p>
+        </div>
+
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-title">🎯 Goal Setting & Tracking</div>
+                <div id="goals-content">Loading goals...</div>
+                <button onclick="addSampleGoal()" style="background: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-top: 10px; cursor: pointer;">Add Sample Goal</button>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-title">📏 Growth Tracking</div>
+                <div id="growth-content">Loading growth data...</div>
+                <button onclick="addGrowthData()" style="background: #27ae60; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-top: 10px; cursor: pointer;">Log Growth</button>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-title">⌚ Wearable Integration</div>
+                <div class="wearable-sync">
+                    <p>Sync data from fitness trackers</p>
+                    <button class="sync-btn" onclick="syncWearableData()">Sync Wearable Data</button>
+                    <div id="wearable-status" style="margin-top: 10px;"></div>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-title">🏆 Competition Calendar</div>
+                <div id="competitions-content">Loading competitions...</div>
+                <button onclick="addCompetition()" style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 4px; margin-top: 10px; cursor: pointer;">Add Event</button>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-title">💬 Coach Communication</div>
+                <p>Stay connected with Aadhi's coaching team</p>
+                <div style="margin: 15px 0;">
+                    <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin: 8px 0;">Latest: "Great progress on consistency!"</div>
+                    <div style="background: #e3f2fd; padding: 10px; border-radius: 6px; margin: 8px 0;">You: "Thanks! Ready for tournament prep"</div>
+                </div>
+                <a href="/coach-communication" style="background: #17a2b8; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; display: inline-block;">Open Chat</a>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-title">🌡️ Weather Integration</div>
+                <div id="weather-content">
+                    <div style="background: #fff3cd; padding: 12px; border-radius: 6px; margin: 8px 0;">
+                        🌦️ Today: Partly cloudy, 72°F<br>
+                        📍 Recommendation: Perfect for outdoor training
+                    </div>
+                    <div style="background: #f8d7da; padding: 12px; border-radius: 6px; margin: 8px 0;">
+                        ⛈️ Tomorrow: Rain expected<br>
+                        📍 Suggestion: Indoor skills practice
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="features-grid" style="margin-top: 25px;">
+            <div class="feature-card">
+                <div class="feature-title">📚 Academic Integration</div>
+                <div style="margin: 15px 0;">
+                    <div class="growth-metric">
+                        <span>Math Grade:</span>
+                        <span class="metric-value">A-</span>
+                    </div>
+                    <div class="growth-metric">
+                        <span>Science Grade:</span>
+                        <span class="metric-value">B+</span>
+                    </div>
+                    <div class="growth-metric">
+                        <span>Study Time:</span>
+                        <span class="metric-value">2.5h/day</span>
+                    </div>
+                </div>
+                <p style="font-size: 0.9em; color: #666;">Academic performance correlates with training consistency</p>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-title">📸 Photo Meal Logging</div>
+                <div style="text-align: center; margin: 15px 0;">
+                    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px dashed #ddd;">
+                        📷 Tap to capture meal<br>
+                        <small>AI will analyze nutrition content</small>
+                    </div>
+                    <div style="margin-top: 10px; font-size: 0.9em; color: #666;">
+                        Last meal: Chicken & rice (650 cal, 1.6 oz protein)
+                    </div>
+                </div>
+            </div>
+
+            <div class="feature-card">
+                <div class="feature-title">⌚ Aadhi's Gizmo Watch</div>
+                <div style="text-align: center; margin: 15px 0;">
+                    <div style="font-size: 3em; margin-bottom: 10px;">⌚</div>
+                    <p><strong>Aadhi's Personal Safety & Activity Monitor</strong></p>
+                    <div style="background: #d4edda; padding: 12px; border-radius: 6px; margin: 10px 0; border-left: 4px solid #27ae60;">
+                        🔋 Battery: 82% | 📍 Location: Soccer Field
+                    </div>
+                    <div style="background: #e3f2fd; padding: 12px; border-radius: 6px; margin: 10px 0; border-left: 4px solid #3498db;">
+                        🏃 Activity: 95 min | 📱 Screen: 35 min | 👟 Steps: 8,500
+                    </div>
+                    <div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin: 8px 0; font-size: 0.9em;">
+                        ⚽ Training session detected at soccer field!
+                    </div>
+                </div>
+                <a href="/gizmo-setup" style="background: linear-gradient(135deg, #28a745, #20c997); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: bold; margin: 5px;">🔗 Connect Real Watch</a>
+                <a href="/aadhi-gizmo" style="background: linear-gradient(135deg, #17a2b8, #138496); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; display: inline-block; font-weight: bold; margin: 5px;">📊 View Dashboard</a>
+            </div>
+        </div>
+
+        <div class="nav-buttons">
+            <a href="/parent" class="nav-btn primary-btn">← Parent Dashboard</a>
+            <a href="/athlete/dashboard" class="nav-btn primary-btn">Athlete Dashboard</a>
+            <a href="/coach-communication" class="nav-btn" style="background: #17a2b8; color: white;">💬 Coach Chat</a>
+            <a href="/aadhi-gizmo" class="nav-btn" style="background: #6f42c1; color: white;">⌚ Aadhi's Watch</a>
+            <a href="/advanced-analytics" class="nav-btn" style="background: #e91e63; color: white;">📈 Advanced Analytics</a>
+            <a href="/" class="nav-btn secondary-btn">🏠 Home</a>
+        </div>
+    </div>
+
+    <script>
+        async function loadPhase2Features() {
+            // Load goals
+            try {
+                const goalsResponse = await fetch('/api/goals');
+                const goalsData = await goalsResponse.json();
+                
+                const goalsHtml = goalsData.goals.map(goal => `
+                    <div class="goal-item">
+                        <strong>${goal.title}</strong><br>
+                        Target: ${goal.target}<br>
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${goal.progress}%"></div>
+                        </div>
+                        Progress: ${goal.progress}% | Deadline: ${goal.deadline}
+                    </div>
+                `).join('');
+                
+                document.getElementById('goals-content').innerHTML = goalsHtml || '<p>No goals set yet</p>';
+            } catch (error) {
+                document.getElementById('goals-content').innerHTML = '<p>Error loading goals</p>';
+            }
+
+            // Load growth data
+            try {
+                const growthResponse = await fetch('/api/growth-tracking');
+                const growthData = await growthResponse.json();
+                
+                document.getElementById('growth-content').innerHTML = `
+                    <div class="growth-metric">
+                        <span>Current Height:</span>
+                        <span class="metric-value">${growthData.trends.latest_height_feet || 'Not set'}</span>
+                    </div>
+                    <div class="growth-metric">
+                        <span>Current Weight:</span>
+                        <span class="metric-value">${growthData.trends.latest_weight_lbs || 'Not set'} lbs</span>
+                    </div>
+                    <div class="growth-metric">
+                        <span>Height Change:</span>
+                        <span class="metric-value">+${growthData.trends.height_change_inches}"</span>
+                    </div>
+                    <div class="growth-metric">
+                        <span>Weight Change:</span>
+                        <span class="metric-value">+${growthData.trends.weight_change_lbs} lbs</span>
+                    </div>
+                `;
+            } catch (error) {
+                document.getElementById('growth-content').innerHTML = '<p>Error loading growth data</p>';
+            }
+
+            // Load competitions
+            try {
+                const compResponse = await fetch('/api/competition-calendar');
+                const compData = await compResponse.json();
+                
+                const compHtml = compData.upcoming_events.map(event => `
+                    <div class="competition-item">
+                        <strong>${event.name}</strong><br>
+                        Date: ${event.date} | Type: ${event.type}<br>
+                        <span class="days-until">${event.days_until} days until event</span>
+                    </div>
+                `).join('');
+                
+                document.getElementById('competitions-content').innerHTML = compHtml || '<p>No upcoming competitions</p>';
+            } catch (error) {
+                document.getElementById('competitions-content').innerHTML = '<p>Error loading competitions</p>';
+            }
+        }
+
+        async function addSampleGoal() {
+            const sampleGoal = {
+                title: 'Increase Training Intensity',
+                target: '95% completion rate',
+                deadline: '2024-03-01',
+                progress: 60
+            };
+            
+            await fetch('/api/goals', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sampleGoal)
+            });
+            
+            loadPhase2Features();
+        }
+
+        async function addGrowthData() {
+            const heightFeet = prompt('Enter height (feet):', '5');
+            const heightInches = prompt('Enter additional inches:', '5');
+            const weight = prompt('Enter weight (lbs):', '125');
+            
+            if (heightFeet && heightInches && weight) {
+                const totalInches = (parseFloat(heightFeet) * 12) + parseFloat(heightInches);
+                await fetch('/api/growth-tracking', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ height_inches: totalInches, weight_lbs: parseFloat(weight) })
+                });
+                
+                loadPhase2Features();
+            }
+        }
+
+        async function syncWearableData() {
+            const sampleData = {
+                heart_rate_avg: 75,
+                steps: 12500,
+                sleep_quality: 85,
+                recovery_score: 78
+            };
+            
+            const response = await fetch('/api/wearable-sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(sampleData)
+            });
+            
+            const result = await response.json();
+            document.getElementById('wearable-status').innerHTML = `✅ Synced ${result.data_points} data points`;
+        }
+
+        async function addCompetition() {
+            const name = prompt('Competition name:', 'Local Tournament');
+            const date = prompt('Date (YYYY-MM-DD):', '2024-02-15');
+            
+            if (name && date) {
+                await fetch('/api/competition-calendar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, date, type: 'tournament', importance: 'medium' })
+                });
+                
+                loadPhase2Features();
+            }
+        }
+
+        loadPhase2Features();
+    </script>
+</body>
+</html>

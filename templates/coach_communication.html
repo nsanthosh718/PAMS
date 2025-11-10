@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PAMS - Coach Communication</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .header { background: rgba(44,62,80,0.9); backdrop-filter: blur(10px); color: white; padding: 25px; border-radius: 15px; margin-bottom: 25px; text-align: center; }
+        .chat-container { background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 15px; padding: 25px; margin-bottom: 20px; height: 400px; overflow-y: auto; }
+        .message { margin: 15px 0; padding: 12px; border-radius: 10px; max-width: 70%; }
+        .message.parent { background: #e3f2fd; margin-left: auto; text-align: right; }
+        .message.coach { background: #f3e5f5; }
+        .message.athlete { background: #e8f5e8; }
+        .message-header { font-size: 0.8em; color: #666; margin-bottom: 5px; }
+        .input-area { display: flex; gap: 10px; margin-top: 15px; }
+        .message-input { flex: 1; padding: 12px; border: 2px solid #ddd; border-radius: 8px; }
+        .send-btn { padding: 12px 20px; background: #3498db; color: white; border: none; border-radius: 8px; cursor: pointer; }
+        .quick-updates { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .update-card { background: rgba(255,255,255,0.9); padding: 15px; border-radius: 10px; text-align: center; }
+        .nav-btn { padding: 12px 24px; margin: 0 10px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; transition: all 0.3s ease; }
+        .primary-btn { background: linear-gradient(135deg, #3498db, #2980b9); color: white; }
+        .secondary-btn { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💬 Coach Communication Hub</h1>
+            <p>Stay connected with Aadhi's development team</p>
+        </div>
+
+        <div class="quick-updates">
+            <div class="update-card">
+                <h4>📊 Weekly Report</h4>
+                <p>Predictability Index: <strong>82</strong></p>
+                <button onclick="sendWeeklyReport()" style="background: #27ae60; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Send to Coach</button>
+            </div>
+            <div class="update-card">
+                <h4>⚠️ Injury Risk</h4>
+                <p>Current Level: <strong>Low</strong></p>
+                <button onclick="sendRiskUpdate()" style="background: #f39c12; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Alert Coach</button>
+            </div>
+            <div class="update-card">
+                <h4>🎯 Goal Progress</h4>
+                <p>Training: <strong>85%</strong></p>
+                <button onclick="sendGoalUpdate()" style="background: #9b59b6; color: white; border: none; padding: 8px 16px; border-radius: 4px; cursor: pointer;">Share Progress</button>
+            </div>
+        </div>
+
+        <div class="chat-container" id="chat-messages">
+            <div class="message coach">
+                <div class="message-header">Coach Martinez - 2 hours ago</div>
+                Great work on consistency this week! Let's focus on recovery for the upcoming tournament.
+            </div>
+            <div class="message parent">
+                <div class="message-header">Parent - 1 hour ago</div>
+                Thanks! Aadhi's sleep has improved to 8.5 hours average. Should we adjust training intensity?
+            </div>
+            <div class="message athlete">
+                <div class="message-header">Aadhi - 30 minutes ago</div>
+                Feeling strong! Ready for extra skills practice this weekend 💪
+            </div>
+        </div>
+
+        <div class="input-area">
+            <input type="text" class="message-input" id="messageInput" placeholder="Type your message...">
+            <select id="messageType" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px;">
+                <option value="parent">As Parent</option>
+                <option value="athlete">As Aadhi</option>
+            </select>
+            <button class="send-btn" onclick="sendMessage()">Send</button>
+        </div>
+
+        <div style="text-align: center; margin-top: 25px;">
+            <a href="/parent" class="nav-btn primary-btn">← Parent Dashboard</a>
+            <a href="/" class="nav-btn secondary-btn">🏠 Home</a>
+        </div>
+    </div>
+
+    <script>
+        function sendMessage() {
+            const input = document.getElementById('messageInput');
+            const type = document.getElementById('messageType').value;
+            const message = input.value.trim();
+            
+            if (message) {
+                const chatContainer = document.getElementById('chat-messages');
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}`;
+                messageDiv.innerHTML = `
+                    <div class="message-header">${type === 'parent' ? 'Parent' : 'Aadhi'} - Just now</div>
+                    ${message}
+                `;
+                
+                chatContainer.appendChild(messageDiv);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+                input.value = '';
+            }
+        }
+
+        function sendWeeklyReport() {
+            const chatContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message parent';
+            messageDiv.innerHTML = `
+                <div class="message-header">Parent - Just now</div>
+                📊 Weekly Report: Predictability Index at 82. Sleep improved, training consistent. Ready for next phase!
+            `;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function sendRiskUpdate() {
+            const chatContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message parent';
+            messageDiv.innerHTML = `
+                <div class="message-header">Parent - Just now</div>
+                ⚠️ Injury Risk Update: Currently low risk. All metrics within healthy ranges.
+            `;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        function sendGoalUpdate() {
+            const chatContainer = document.getElementById('chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message parent';
+            messageDiv.innerHTML = `
+                <div class="message-header">Parent - Just now</div>
+                🎯 Goal Progress: Training consistency at 85%. Sleep goal at 90%. Great momentum!
+            `;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>

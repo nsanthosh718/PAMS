@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PAMS - Aadhi's App</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 450px; margin: 0 auto; }
+        .header { text-align: center; color: white; margin-bottom: 30px; animation: fadeIn 0.8s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+        .checkin-form { background: rgba(255,255,255,0.95); backdrop-filter: blur(15px); padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.15); animation: slideUp 0.6s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        .form-group { margin-bottom: 25px; }
+        label { display: block; margin-bottom: 10px; font-weight: 600; color: #2c3e50; }
+        input, select, textarea { width: 100%; padding: 15px; border: 2px solid #e0e6ed; border-radius: 12px; font-size: 16px; transition: all 0.3s ease; background: rgba(255,255,255,0.8); }
+        input:focus, select:focus, textarea:focus { border-color: #667eea; outline: none; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(102,126,234,0.15); background: white; }
+        .mood-selector { display: flex; justify-content: space-between; margin-top: 15px; gap: 10px; }
+        .mood-btn { padding: 15px; border: none; border-radius: 50%; font-size: 28px; cursor: pointer; background: #f8f9fa; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        .mood-btn:hover { transform: translateY(-3px) scale(1.1); box-shadow: 0 8px 25px rgba(0,0,0,0.15); }
+        .mood-btn.selected { background: linear-gradient(135deg, #667eea, #764ba2); color: white; transform: translateY(-3px) scale(1.1); box-shadow: 0 10px 30px rgba(102,126,234,0.4); }
+        .submit-btn { width: 100%; padding: 18px; background: linear-gradient(135deg, #667eea, #764ba2); color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); position: relative; overflow: hidden; }
+        .submit-btn::before { content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%; background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent); transition: left 0.5s; }
+        .submit-btn:hover::before { left: 100%; }
+        .submit-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(102,126,234,0.4); }
+        .submit-btn:active { transform: translateY(-1px); }
+        .success { background: linear-gradient(135deg, #27ae60, #229954); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 25px; animation: bounceIn 0.6s ease-out; box-shadow: 0 10px 30px rgba(39,174,96,0.3); }
+        @keyframes bounceIn { 0% { opacity: 0; transform: scale(0.3); } 50% { opacity: 1; transform: scale(1.05); } 70% { transform: scale(0.9); } 100% { transform: scale(1); } }
+        .nav-btn { padding: 12px 24px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; margin: 0 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .nav-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,0.2); }
+        .primary-btn { background: linear-gradient(135deg, #667eea, #764ba2); color: white; }
+        .secondary-btn { background: linear-gradient(135deg, #95a5a6, #7f8c8d); color: white; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚽ Hey Aadhi!</h1>
+            <p>Daily Check-in for Predictable Excellence</p>
+        </div>
+
+        <div id="success-message" class="success" style="display: none;">
+            ✅ Great job! Your data has been logged.
+        </div>
+
+        <form class="checkin-form" id="checkinForm">
+            <div class="form-group">
+                <label>😴 How many hours did you sleep?</label>
+                <input type="number" id="sleep_hours" min="4" max="12" step="0.5" required>
+            </div>
+
+            <div class="form-group">
+                <label>😊 How are you feeling today?</label>
+                <div class="mood-selector">
+                    <button type="button" class="mood-btn" data-mood="1">😢</button>
+                    <button type="button" class="mood-btn" data-mood="2">😕</button>
+                    <button type="button" class="mood-btn" data-mood="3">😐</button>
+                    <button type="button" class="mood-btn" data-mood="4">😊</button>
+                    <button type="button" class="mood-btn" data-mood="5">😄</button>
+                </div>
+                <input type="hidden" id="mood" required>
+            </div>
+
+            <div class="form-group">
+                <label>⚽ Training completed today?</label>
+                <select id="training_completed" required>
+                    <option value="">Select...</option>
+                    <option value="true">Yes, completed</option>
+                    <option value="false">No, rest day</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>💧 Water bottles consumed (8oz each)</label>
+                <input type="number" id="water_bottles" min="0" max="15" required>
+                <small style="color: #666;">Target: 8 bottles daily</small>
+            </div>
+
+            <div class="form-group">
+                <label>🍽️ Protein intake today</label>
+                <select id="protein_level" required>
+                    <option value="">Select...</option>
+                    <option value="low">Low (eggs/yogurt only)</option>
+                    <option value="medium">Medium (+ chicken/fish)</option>
+                    <option value="high">High (+ protein shake)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>📚 Homework completed?</label>
+                <select id="homework_done" required>
+                    <option value="">Select...</option>
+                    <option value="true">Yes, all done</option>
+                    <option value="false">Still working on it</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>🙏 One thing you're grateful for today</label>
+                <textarea id="gratitude" rows="3" placeholder="What made you smile today?"></textarea>
+            </div>
+
+            <button type="submit" class="submit-btn">Log My Day 🚀</button>
+        </form>
+        
+        <div style="text-align: center; margin-top: 25px;">
+            <a href="/athlete/dashboard" class="nav-btn primary-btn">📈 My Dashboard</a>
+            <a href="/" class="nav-btn secondary-btn">🏠 Home</a>
+        </div>
+    </div>
+
+    <script>
+        // Mood selector
+        document.querySelectorAll('.mood-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                document.getElementById('mood').value = btn.dataset.mood;
+            });
+        });
+
+        // Form submission
+        document.getElementById('checkinForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = {
+                sleep_hours: parseFloat(document.getElementById('sleep_hours').value),
+                mood: parseInt(document.getElementById('mood').value),
+                training_completed: document.getElementById('training_completed').value === 'true',
+                water_bottles: parseInt(document.getElementById('water_bottles').value),
+                protein_level: document.getElementById('protein_level').value,
+                homework_done: document.getElementById('homework_done').value === 'true',
+                gratitude: document.getElementById('gratitude').value,
+                timestamp: new Date().toISOString()
+            };
+
+            try {
+                const response = await fetch('/api/checkin', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    document.getElementById('success-message').style.display = 'block';
+                    document.getElementById('checkinForm').reset();
+                    document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+                    setTimeout(() => {
+                        document.getElementById('success-message').style.display = 'none';
+                    }, 3000);
+                }
+            } catch (error) {
+                alert('Error saving data. Please try again.');
+            }
+        });
+    </script>
+</body>
+</html>

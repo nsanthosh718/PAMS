@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PAMS - Enhanced Analytics</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .header { background: #2c3e50; color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .dashboard-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+        .main-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .metric-value { font-size: 2em; font-weight: bold; color: #3498db; }
+        .sidebar { display: flex; flex-direction: column; gap: 15px; }
+        .risk-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .risk-high { border-left: 5px solid #e74c3c; }
+        .risk-moderate { border-left: 5px solid #f39c12; }
+        .risk-low { border-left: 5px solid #27ae60; }
+        .nutrition-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .recommendation { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .rec-high { background: #ffebee; border-left: 4px solid #e74c3c; }
+        .rec-medium { background: #fff3e0; border-left: 4px solid #f39c12; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏆 PAMS - Enhanced Analytics Dashboard</h1>
+            <p>Advanced insights for predictable excellence</p>
+        </div>
+
+        <div class="dashboard-grid">
+            <div class="main-metrics" id="metrics">
+                <!-- Main metrics will load here -->
+            </div>
+            
+            <div class="sidebar">
+                <div class="risk-card" id="injury-risk">
+                    <h3>⚠️ Injury Risk Assessment</h3>
+                    <div id="risk-content">Loading...</div>
+                </div>
+                
+                <div class="nutrition-card">
+                    <h3>🍎 Nutrition AI</h3>
+                    <div id="nutrition-recommendations">Loading...</div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 20px 0;">
+            <a href="/parent" style="background: #3498db; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin: 0 10px;">← Back to Dashboard</a>
+            <a href="/athlete" style="background: #e74c3c; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; margin: 0 10px;">View Athlete App</a>
+        </div>
+    </div>
+
+    <script>
+        async function loadEnhancedDashboard() {
+            // Load main analytics
+            const analyticsResponse = await fetch('/api/analytics');
+            const analytics = await analyticsResponse.json();
+            
+            document.getElementById('metrics').innerHTML = `
+                <div class="metric-card">
+                    <h3>🎯 Predictability Index</h3>
+                    <div class="metric-value">${analytics.predictability_index || 0}</div>
+                    <p>${analytics.status || 'No data'}</p>
+                </div>
+                <div class="metric-card">
+                    <h3>😴 Sleep Quality</h3>
+                    <div class="metric-value">${analytics.avg_sleep?.toFixed(1) || 0}h</div>
+                    <p>Target: 9.0h</p>
+                </div>
+                <div class="metric-card">
+                    <h3>💧 Hydration</h3>
+                    <div class="metric-value">${analytics.avg_hydration?.toFixed(1) || 0}</div>
+                    <p>Bottles per day</p>
+                </div>
+                <div class="metric-card">
+                    <h3>⚽ Training</h3>
+                    <div class="metric-value">${analytics.training_consistency?.toFixed(0) || 0}%</div>
+                    <p>Consistency rate</p>
+                </div>
+            `;
+            
+            // Load injury risk
+            const riskResponse = await fetch('/api/injury-risk');
+            const risk = await riskResponse.json();
+            
+            const riskCard = document.getElementById('injury-risk');
+            riskCard.className = `risk-card risk-${risk.risk_level}`;
+            
+            document.getElementById('risk-content').innerHTML = `
+                <div style="font-size: 2em; font-weight: bold; margin: 10px 0;">${risk.score}%</div>
+                <p>Risk Level: <strong>${risk.risk_level.toUpperCase()}</strong></p>
+                <div style="font-size: 0.9em; margin-top: 10px;">
+                    Sleep Issues: ${risk.factors?.sleep_issues || 0}%<br>
+                    Training Load: ${risk.factors?.training_load || 0}%<br>
+                    Mood Concerns: ${risk.factors?.mood_concerns || 0}%
+                </div>
+            `;
+            
+            // Load nutrition recommendations
+            const nutritionResponse = await fetch('/api/nutrition-ai');
+            const nutrition = await nutritionResponse.json();
+            
+            const nutritionHtml = nutrition.recommendations.length > 0
+                ? nutrition.recommendations.map(rec => 
+                    `<div class="recommendation rec-${rec.priority}">
+                        <strong>${rec.type.toUpperCase()}</strong><br>
+                        ${rec.message}
+                    </div>`
+                  ).join('')
+                : '<p>All nutrition targets met! 🎉</p>';
+            
+            document.getElementById('nutrition-recommendations').innerHTML = nutritionHtml;
+        }
+
+        loadEnhancedDashboard();
+        setInterval(loadEnhancedDashboard, 60000); // Refresh every minute
+    </script>
+</body>
+</html>
