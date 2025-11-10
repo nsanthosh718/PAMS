@@ -33,11 +33,26 @@
     <div class="container">
         <div class="header">
             <h1>🏆 PAMS - {{ user.name }}'s Dashboard</h1>
-            <p>Parent Dashboard - Monitor {{ user.name }}'s athlete progress</p>
+            <p>Parent Dashboard - Monitor your athletes' progress</p>
             <div style="text-align: right; margin-top: 10px;">
                 <a href="/logout" style="color: white; text-decoration: none; opacity: 0.8;">🚪 Logout</a>
             </div>
         </div>
+
+        {% if children %}
+        <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+            <h3>Your Athletes</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+                {% for child in children %}
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border-left: 4px solid #3498db;">
+                    <h4>⚽ {{ child.name }}</h4>
+                    <p>Age: {{ child.age }} | Sport: {{ child.sport }}</p>
+                    <a href="/parent/child/{{ child.id }}/dashboard" style="background: #3498db; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none; font-size: 14px;">📈 View {{ child.name }}'s Dashboard</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
 
         <div class="predictability-card" style="background: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
             <h2 style="margin: 0 0 10px 0;">Predictability Index</h2>
@@ -59,7 +74,7 @@
                 <a href="/parent/enhanced" class="nav-btn purple-btn">📈 Enhanced Analytics</a>
                 <a href="/activity-import" class="nav-btn" style="background: linear-gradient(135deg, #28a745, #20c997); color: white;">📱 Activity Import</a>
                 <a href="/phase2" class="nav-btn" style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white;">🚀 Phase 2 Features</a>
-                <a href="/parent/athlete-view" class="nav-btn danger-btn">⚽ Athlete Interface</a>
+                <a href="/parent/athlete-view" class="nav-btn danger-btn">⚽ Kids Check-in Interface</a>
                 <a href="/logout" class="nav-btn secondary-btn">🚪 Logout</a>
             </div>
         </div>

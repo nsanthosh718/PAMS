@@ -278,6 +278,24 @@ def athlete_app():
 def parent_athlete_view():
     return render_template('athlete_app.html')  # Parent can access athlete interface
 
+@app.route('/parent/child/<child_id>/dashboard')
+@require_auth
+def view_child_dashboard(child_id):
+    user = get_current_user()
+    if user['role'] != 'parent':
+        return redirect('/')
+    
+    # Verify child belongs to parent
+    if child_id not in user.get('children', []):
+        return redirect('/parent')
+    
+    users = load_data('users')
+    child = users.get(child_id)
+    if not child:
+        return redirect('/parent')
+    
+    return render_template('child_dashboard_view.html', child=child)
+
 @app.route('/parent/enhanced')
 def enhanced_dashboard():
     return render_template('enhanced_dashboard.html')
