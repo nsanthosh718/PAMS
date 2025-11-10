@@ -27,8 +27,16 @@ def favicon():
 def health_check():
     return jsonify({'status': 'healthy', 'message': 'PAMS is running'}), 200
 
-# Security middleware
-Talisman(app, force_https=False)  # Set to True in production
+# Security middleware with relaxed CSP for inline styles
+Talisman(app, 
+    force_https=False,
+    content_security_policy={
+        'default-src': "'self'",
+        'style-src': "'self' 'unsafe-inline'",
+        'script-src': "'self' 'unsafe-inline'",
+        'img-src': "'self' data:"
+    }
+)
 limiter = Limiter(
     key_func=get_remote_address,
     app=app,
@@ -114,7 +122,9 @@ def home():
             return redirect('/parent')
         else:
             return redirect('/athlete/dashboard')
-    return render_template('auth.html')
+    response = app.make_response(render_template('auth.html'))
+    response.headers['Content-Type'] = 'text/html; charset=utf-8'
+    return response
 
 @app.route('/register', methods=['GET', 'POST'])
 @limiter.limit("5 per minute")
