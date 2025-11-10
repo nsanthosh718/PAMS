@@ -27,7 +27,7 @@
     <div class="container">
         <div class="header">
             <h1>💬 Coach Communication Hub</h1>
-            <p>Stay connected with Aadhi's development team</p>
+            <p>Stay connected with athlete's development team</p>
         </div>
 
         <div class="quick-updates">
@@ -55,10 +55,10 @@
             </div>
             <div class="message parent">
                 <div class="message-header">Parent - 1 hour ago</div>
-                Thanks! Aadhi's sleep has improved to 8.5 hours average. Should we adjust training intensity?
+                Thanks! Athlete's sleep has improved to 8.5 hours average. Should we adjust training intensity?
             </div>
             <div class="message athlete">
-                <div class="message-header">Aadhi - 30 minutes ago</div>
+                <div class="message-header">Athlete - 30 minutes ago</div>
                 Feeling strong! Ready for extra skills practice this weekend 💪
             </div>
         </div>
@@ -67,7 +67,7 @@
             <input type="text" class="message-input" id="messageInput" placeholder="Type your message...">
             <select id="messageType" style="padding: 12px; border: 2px solid #ddd; border-radius: 8px;">
                 <option value="parent">As Parent</option>
-                <option value="athlete">As Aadhi</option>
+                <option value="athlete">As Athlete</option>
             </select>
             <button class="send-btn" onclick="sendMessage()">Send</button>
         </div>
@@ -89,7 +89,7 @@
                 const messageDiv = document.createElement('div');
                 messageDiv.className = `message ${type}`;
                 messageDiv.innerHTML = `
-                    <div class="message-header">${type === 'parent' ? 'Parent' : 'Aadhi'} - Just now</div>
+                    <div class="message-header">${type === 'parent' ? 'Parent' : 'Athlete'} - Just now</div>
                     ${message}
                 `;
                 

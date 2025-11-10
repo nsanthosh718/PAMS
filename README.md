@@ -2,7 +2,7 @@
 
 **System Vision: "Predictable Excellence"**
 
-Build Aadhi's predictability across physical, mental, and academic dimensions.
+Build athlete predictability across physical, mental, and academic dimensions.
 
 ## Quick Start
 
@@ -28,7 +28,7 @@ python app.py
 - AI-powered insights and alerts
 - Performance tracking across all domains
 
-### ⚽ Athlete App (Aadhi)
+### ⚽ Athlete App
 - Daily check-in form
 - Sleep, mood, and training logging
 - Hydration and nutrition tracking

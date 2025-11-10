@@ -5,7 +5,7 @@
 PAMS is now a **dynamic multi-user system** that supports unlimited families and athletes:
 
 ### ✅ **Removed:**
-- All hardcoded references to "Aadhi"
+- All hardcoded athlete-specific references
 - Sample/simulation data
 - Single-user limitations
 

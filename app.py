@@ -311,17 +311,9 @@ def phase2_features():
 def coach_communication():
     return render_template('coach_communication.html')
 
-@app.route('/gizmo-dashboard')
-def gizmo_dashboard_page():
-    return render_template('aadhi_gizmo_dashboard.html')
-
-@app.route('/aadhi-gizmo')
-def aadhi_gizmo_page():
-    return render_template('aadhi_gizmo_dashboard.html')
-
-@app.route('/gizmo-setup')
-def gizmo_setup_page():
-    return render_template('gizmo_setup.html')
+@app.route('/activity-import')
+def activity_import_page():
+    return render_template('activity_import.html')
 
 @app.route('/advanced-analytics')
 def advanced_analytics_page():
@@ -331,12 +323,37 @@ def advanced_analytics_page():
 def mobile_app():
     return render_template('mobile_app.html')
 
-@app.route('/api/gizmo-config')
-def get_gizmo_config():
-    config = load_data('gizmo_config')
-    if config:
-        return jsonify(config)
-    return jsonify({'status': 'not_connected'}), 404
+@app.route('/api/activity-import', methods=['POST'])
+@limiter.limit("10 per minute")
+@require_auth
+def import_activity_data():
+    if not request.json:
+        return jsonify({'error': 'Invalid data'}), 400
+    
+    user = get_current_user()
+    data = sanitize_input(request.json)
+    
+    # Validate activity data
+    required_fields = ['steps', 'active_minutes', 'calories']
+    if not all(field in data for field in required_fields):
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    today = str(date.today())
+    activity_data = {
+        'steps': int(data['steps']),
+        'active_minutes': int(data['active_minutes']),
+        'calories': int(data['calories']),
+        'distance': float(data.get('distance', 0)),
+        'heart_rate_avg': int(data.get('heart_rate_avg', 0)),
+        'imported_at': datetime.now().isoformat(),
+        'source': data.get('source', 'phone_app')
+    }
+    
+    user_activity = get_user_data('activity_imports')
+    user_activity[today] = activity_data
+    save_user_data('activity_imports', user_activity)
+    
+    return jsonify({'status': 'imported', 'date': today})
 
 @app.route('/api/checkin', methods=['POST'])
 @limiter.limit("10 per minute")
@@ -569,146 +586,31 @@ def wearable_sync():
     
     return jsonify({'status': 'synced', 'data_points': len(wearable_data)})
 
-@app.route('/api/gizmo-connect', methods=['POST'])
-def connect_real_gizmo():
-    # Real Gizmo Watch connection setup
-    connection_data = request.json
-    device_id = connection_data.get('device_id')
-    phone_number = connection_data.get('phone_number')
-    
-    if not device_id or not phone_number:
-        return jsonify({'error': 'Device ID and phone number required'}), 400
-    
-    # Store real device connection
-    gizmo_config = {
-        'device_id': device_id,
-        'phone_number': phone_number,
-        'athlete_name': 'Aadhi',
-        'connected_at': str(datetime.now()),
-        'status': 'connected'
-    }
-    
-    save_data('gizmo_config', gizmo_config)
-    
-    return jsonify({
-        'status': 'connected',
-        'device_id': device_id,
-        'message': f'Aadhi\'s Gizmo watch {device_id} connected successfully'
-    })
-
-@app.route('/api/gizmo-webhook', methods=['POST'])
-def gizmo_webhook():
-    # Real-time webhook from Gizmo API
-    webhook_data = request.json
-    
-    # Verify webhook authenticity (in production, verify signature)
-    device_id = webhook_data.get('device_id')
-    config = load_data('gizmo_config')
-    
-    if not config or config.get('device_id') != device_id:
-        return jsonify({'error': 'Unauthorized device'}), 401
-    
-    # Process real-time data from Aadhi's watch
-    real_time_data = {
-        'timestamp': webhook_data.get('timestamp'),
-        'device_id': device_id,
-        'location': webhook_data.get('location', {}),
-        'battery_level': webhook_data.get('battery_level'),
-        'activity_data': webhook_data.get('activity', {}),
-        'safety_status': webhook_data.get('safety_status'),
-        'screen_time': webhook_data.get('screen_time'),
-        'messages': webhook_data.get('messages', []),
-        'sos_alerts': webhook_data.get('sos_alerts', [])
-    }
-    
-    # Store real-time data
-    today = str(date.today())
-    gizmo_realtime = load_data('gizmo_realtime')
-    if today not in gizmo_realtime:
-        gizmo_realtime[today] = []
-    gizmo_realtime[today].append(real_time_data)
-    save_data('gizmo_realtime', gizmo_realtime)
-    
-    # Generate real-time alerts
-    alerts = []
-    if real_time_data['battery_level'] < 20:
-        alerts.append('LOW_BATTERY')
-    if real_time_data['safety_status'] != 'SAFE':
-        alerts.append('SAFETY_ALERT')
-    if real_time_data['sos_alerts']:
-        alerts.append('EMERGENCY')
-    
-    return jsonify({
-        'status': 'processed',
-        'alerts_generated': alerts,
-        'timestamp': real_time_data['timestamp']
-    })
-
-@app.route('/api/aadhi-gizmo-sync', methods=['POST'])
-def aadhi_gizmo_sync():
-    # Fallback for manual sync when real-time unavailable
-    return jsonify({'message': 'Use /api/gizmo-connect for real device connection'})
-
-@app.route('/api/gizmo-sync', methods=['POST'])
-def gizmo_sync():
-    # Generic Gizmo Watch integration (fallback)
-    return aadhi_gizmo_sync()  # Redirect to Aadhi's specific integration
-
-@app.route('/api/aadhi-gizmo-dashboard')
-def aadhi_gizmo_dashboard():
-    aadhi_data = load_data('aadhi_gizmo')
-    recent_data = list(aadhi_data.values())[-7:]  # Last 7 days
+@app.route('/api/activity-stats')
+@require_auth
+def get_activity_stats():
+    user_activity = get_user_data('activity_imports')
+    recent_data = list(user_activity.values())[-7:]  # Last 7 days
     
     if not recent_data:
-        return jsonify({'status': 'no_data', 'athlete': 'Aadhi'})
+        return jsonify({'status': 'no_data'})
     
-    # Calculate Aadhi's averages
-    avg_activity = sum(d.get('activity_minutes', 0) for d in recent_data) / len(recent_data)
-    avg_screen_time = sum(d.get('screen_time', 0) for d in recent_data) / len(recent_data)
-    avg_steps = sum(d.get('steps_count', 0) for d in recent_data) / len(recent_data)
-    latest_battery = recent_data[-1].get('battery_level', 100) if recent_data else 100
-    latest_location = recent_data[-1].get('training_location', 'unknown') if recent_data else 'unknown'
-    
-    # Aadhi's safety status
-    safety_alerts = []
-    training_sessions = 0
-    
-    for day_data in recent_data:
-        if day_data.get('emergency_alerts'):
-            safety_alerts.append('🚨 SOS alert from Aadhi')
-        if day_data.get('safe_zones') != 'safe':
-            safety_alerts.append('📍 Aadhi left safe zone')
-        if day_data.get('training_location') == 'soccer_field':
-            training_sessions += 1
-    
-    # Performance insights specific to Aadhi
-    performance_insights = []
-    if avg_activity >= 120:
-        performance_insights.append('🏆 Aadhi exceeding activity goals!')
-    if avg_screen_time <= 60:
-        performance_insights.append('📱 Great screen time balance')
-    if training_sessions >= 4:
-        performance_insights.append('⚽ Consistent training attendance')
+    avg_steps = sum(d.get('steps', 0) for d in recent_data) / len(recent_data)
+    avg_active_minutes = sum(d.get('active_minutes', 0) for d in recent_data) / len(recent_data)
+    avg_calories = sum(d.get('calories', 0) for d in recent_data) / len(recent_data)
     
     return jsonify({
-        'athlete_name': 'Aadhi',
-        'device_id': 'AADHI_GIZMO_001',
-        'activity_average': round(avg_activity, 1),
-        'screen_time_average': round(avg_screen_time, 1),
-        'steps_average': round(avg_steps, 1),
-        'current_battery': latest_battery,
-        'current_location': latest_location,
-        'safety_status': 'safe' if not safety_alerts else 'alerts',
-        'recent_alerts': safety_alerts[-3:],
-        'training_sessions_week': training_sessions,
-        'performance_insights': performance_insights,
-        'location_tracking': 'active'
+        'avg_steps': round(avg_steps),
+        'avg_active_minutes': round(avg_active_minutes),
+        'avg_calories': round(avg_calories),
+        'days_tracked': len(recent_data),
+        'step_goal_met': sum(1 for d in recent_data if d.get('steps', 0) >= 10000),
+        'activity_goal_met': sum(1 for d in recent_data if d.get('active_minutes', 0) >= 60)
     })
 
-@app.route('/api/gizmo-dashboard')
-def gizmo_dashboard():
-    # Redirect to Aadhi's specific dashboard
-    return aadhi_gizmo_dashboard()
+
+
+
 
 @app.route('/api/competition-calendar', methods=['GET', 'POST'])
 def competition_calendar():
@@ -938,7 +840,7 @@ def init_data_structure():
         os.makedirs(DATA_DIR)
     
     # Initialize empty data files if they don't exist
-    data_files = ['users', 'checkins', 'goals', 'competitions', 'team_social', 'growth', 'wearables']
+    data_files = ['users', 'checkins', 'goals', 'competitions', 'team_social', 'growth', 'wearables', 'activity_imports']
     for filename in data_files:
         if not os.path.exists(os.path.join(DATA_DIR, f'{filename}.json')):
             save_data(filename, {})
