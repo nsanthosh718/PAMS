@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PAMS - Young Athlete Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: linear-gradient(135deg, #ff6b6b 0%, #ffa500 100%); min-height: 100vh; padding: 20px; }
+        .container { max-width: 400px; margin: 0 auto; padding: 40px; background: rgba(255,255,255,0.95); backdrop-filter: blur(10px); border-radius: 25px; box-shadow: 0 25px 50px rgba(0,0,0,0.15); }
+        .header { text-align: center; margin-bottom: 30px; }
+        .logo { font-size: 4em; margin-bottom: 10px; }
+        h1 { color: #2c3e50; margin-bottom: 5px; font-size: 2em; }
+        .subtitle { color: #7f8c8d; margin-bottom: 30px; font-size: 1.1em; }
+        .form-group { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 8px; font-weight: bold; color: #2c3e50; font-size: 1.1em; }
+        input { width: 100%; padding: 18px; border: 3px solid #e0e6ed; border-radius: 15px; font-size: 18px; transition: all 0.3s ease; }
+        input:focus { border-color: #ff6b6b; outline: none; transform: translateY(-2px); box-shadow: 0 8px 25px rgba(255,107,107,0.2); }
+        .pin-input { text-align: center; font-family: monospace; font-weight: bold; letter-spacing: 3px; text-transform: uppercase; }
+        .submit-btn { width: 100%; padding: 20px; background: linear-gradient(135deg, #ff6b6b, #ffa500); color: white; border: none; border-radius: 15px; font-size: 20px; font-weight: bold; cursor: pointer; transition: all 0.3s ease; }
+        .submit-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(255,107,107,0.4); }
+        .parent-link { text-align: center; margin-top: 20px; }
+        .parent-link a { color: #3498db; text-decoration: none; font-weight: bold; }
+        .error { background: #f8d7da; color: #721c24; padding: 15px; border-radius: 8px; margin-bottom: 20px; display: none; }
+        .info { background: #fff3cd; padding: 15px; border-radius: 10px; margin-bottom: 20px; font-size: 0.9em; color: #856404; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">⚽</div>
+            <h1>Hey Athlete!</h1>
+            <p class="subtitle">Ready to track your excellence?</p>
+        </div>
+
+        <div class="info">
+            <strong>🔑 Need your PIN?</strong><br>
+            Ask your parent for your 6-letter PIN code
+        </div>
+
+        <div id="error-message" class="error"></div>
+
+        <form id="childLoginForm">
+            <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" required placeholder="Enter your first name">
+            </div>
+
+            <div class="form-group">
+                <label for="pin">Your PIN</label>
+                <input type="text" id="pin" class="pin-input" required placeholder="ABC123" maxlength="6">
+            </div>
+
+            <button type="submit" class="submit-btn">🚀 Let's Go!</button>
+        </form>
+
+        <div class="parent-link">
+            Are you a parent? <a href="/login">Sign in here</a>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('childLoginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value.trim();
+            const pin = document.getElementById('pin').value.trim().toUpperCase();
+            
+            if (!name || !pin) {
+                showError('Please enter both your name and PIN');
+                return;
+            }
+            
+            if (pin.length !== 6) {
+                showError('PIN must be 6 characters');
+                return;
+            }
+            
+            try {
+                const response = await fetch('/child-login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, pin })
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    window.location.href = result.redirect;
+                } else {
+                    showError(result.error);
+                }
+            } catch (error) {
+                showError('Login failed. Please try again.');
+            }
+        });
+        
+        // Auto-uppercase PIN input
+        document.getElementById('pin').addEventListener('input', function(e) {
+            e.target.value = e.target.value.toUpperCase();
+        });
+        
+        function showError(message) {
+            const errorDiv = document.getElementById('error-message');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>

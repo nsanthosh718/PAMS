@@ -32,8 +32,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>🏆 PAMS - Aadhi's Predictable Excellence</h1>
-            <p>Parent Dashboard - Monitor trends & insights</p>
+            <h1>🏆 PAMS - {{ user.name }}'s Dashboard</h1>
+            <p>Parent Dashboard - Monitor {{ user.name }}'s athlete progress</p>
+            <div style="text-align: right; margin-top: 10px;">
+                <a href="/logout" style="color: white; text-decoration: none; opacity: 0.8;">🚪 Logout</a>
+            </div>
         </div>
 
         <div class="predictability-card" style="background: white; padding: 25px; border-radius: 12px; margin-bottom: 20px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
@@ -56,7 +59,7 @@
                 <a href="/parent/enhanced" class="nav-btn purple-btn">📈 Enhanced Analytics</a>
                 <a href="/phase2" class="nav-btn" style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white;">🚀 Phase 2 Features</a>
                 <a href="/parent/athlete-view" class="nav-btn danger-btn">⚽ Athlete Interface</a>
-                <a href="/" class="nav-btn secondary-btn">🏠 Home</a>
+                <a href="/logout" class="nav-btn secondary-btn">🚪 Logout</a>
             </div>
         </div>
     </div>

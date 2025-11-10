@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, escape
+from flask import Flask, render_template, request, jsonify, session, redirect
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_talisman import Talisman
@@ -41,6 +41,34 @@ def require_auth(f):
         return f(*args, **kwargs)
     return decorated_function
 
+# User management functions
+def get_current_user():
+    if 'user_id' not in session:
+        return None
+    users = load_data('users')
+    return users.get(session['user_id'])
+
+def get_user_data(filename, user_id=None):
+    if not user_id:
+        user = get_current_user()
+        if not user:
+            return {}
+        user_id = user['id']
+    
+    data = load_data(filename)
+    return data.get(user_id, {})
+
+def save_user_data(filename, data, user_id=None):
+    if not user_id:
+        user = get_current_user()
+        if not user:
+            return
+        user_id = user['id']
+    
+    all_data = load_data(filename)
+    all_data[user_id] = data
+    save_data(filename, all_data)
+
 # Data storage (simple JSON files)
 DATA_DIR = 'data'
 os.makedirs(DATA_DIR, exist_ok=True)
@@ -67,15 +95,161 @@ def save_data(filename, data):
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    if 'user_id' in session:
+        user = get_current_user()
+        if user['role'] == 'parent':
+            return redirect('/parent')
+        else:
+            return redirect('/athlete/dashboard')
+    return render_template('auth.html')
+
+@app.route('/register', methods=['GET', 'POST'])
+@limiter.limit("5 per minute")
+def register():
+    if request.method == 'POST':
+        data = sanitize_input(request.json)
+        
+        # Validate parent registration
+        if not all(k in data for k in ['parent_name', 'email', 'password']):
+            return jsonify({'error': 'Missing required fields'}), 400
+        
+        if len(data['password']) < 6:
+            return jsonify({'error': 'Password must be at least 6 characters'}), 400
+        
+        # Check if email already exists
+        users = load_data('users')
+        for user in users.values():
+            if user.get('email', '').lower() == data['email'].lower():
+                return jsonify({'error': 'Email already registered'}), 400
+        
+        # Create parent account only
+        parent_id = str(uuid.uuid4())
+        family_id = str(uuid.uuid4())
+        
+        users[parent_id] = {
+            'id': parent_id,
+            'name': data['parent_name'],
+            'email': data['email'],
+            'role': 'parent',
+            'family_id': family_id,
+            'children': [],  # Will store child IDs
+            'password_hash': generate_password_hash(data['password']),
+            'created_at': datetime.now().isoformat()
+        }
+        
+        save_data('users', users)
+        
+        # Auto-login parent
+        session['user_id'] = parent_id
+        return jsonify({'status': 'success', 'redirect': '/parent/setup'})
+    
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")
+def login():
+    if request.method == 'POST':
+        data = sanitize_input(request.json)
+        
+        if not all(k in data for k in ['email', 'password']):
+            return jsonify({'error': 'Missing credentials'}), 400
+        
+        users = load_data('users')
+        user = None
+        
+        # Find user by email (parents only)
+        for u in users.values():
+            if u.get('email', '').lower() == data['email'].lower() and u['role'] == 'parent':
+                user = u
+                break
+        
+        if not user or not check_password_hash(user['password_hash'], data['password']):
+            return jsonify({'error': 'Invalid credentials'}), 401
+        
+        session['user_id'] = user['id']
+        return jsonify({'status': 'success', 'redirect': '/parent'})
+    
+    return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
+
+@app.route('/parent/setup')
+@require_auth
+def parent_setup():
+    user = get_current_user()
+    if user['role'] != 'parent':
+        return redirect('/')
+    return render_template('parent_setup.html', user=user)
 
 @app.route('/parent')
+@require_auth
 def parent_dashboard():
-    return render_template('parent_dashboard.html')
+    user = get_current_user()
+    if user['role'] != 'parent':
+        return redirect('/')
+    
+    # Get children data
+    users = load_data('users')
+    children = [users[child_id] for child_id in user.get('children', []) if child_id in users]
+    
+    return render_template('parent_dashboard.html', user=user, children=children)
+
+@app.route('/api/add-child', methods=['POST'])
+@limiter.limit("5 per minute")
+@require_auth
+def add_child():
+    user = get_current_user()
+    if user['role'] != 'parent':
+        return jsonify({'error': 'Unauthorized'}), 403
+    
+    data = sanitize_input(request.json)
+    if not all(k in data for k in ['name', 'age', 'sport']):
+        return jsonify({'error': 'Missing required fields'}), 400
+    
+    # Create child profile
+    child_id = str(uuid.uuid4())
+    pin = str(uuid.uuid4())[:6].upper()  # Simple 6-char PIN for child
+    
+    users = load_data('users')
+    users[child_id] = {
+        'id': child_id,
+        'name': data['name'],
+        'age': int(data['age']),
+        'sport': data['sport'],
+        'role': 'child',
+        'parent_id': user['id'],
+        'family_id': user['family_id'],
+        'pin': pin,  # Simple PIN instead of password
+        'created_at': datetime.now().isoformat(),
+        'permissions': {
+            'can_checkin': True,
+            'can_view_stats': True,
+            'can_post_social': False  # Parent controls social features
+        }
+    }
+    
+    # Add child to parent's children list
+    user['children'] = user.get('children', [])
+    user['children'].append(child_id)
+    users[user['id']] = user
+    
+    save_data('users', users)
+    
+    return jsonify({
+        'status': 'success', 
+        'child_id': child_id,
+        'pin': pin,
+        'message': f'Child profile created. PIN: {pin}'
+    })
 
 @app.route('/athlete')
+@require_auth
 def athlete_app():
-    return render_template('athlete_app.html')
+    user = get_current_user()
+    return render_template('athlete_app.html', user=user)
 
 @app.route('/parent/athlete-view')
 def parent_athlete_view():
@@ -85,9 +259,49 @@ def parent_athlete_view():
 def enhanced_dashboard():
     return render_template('enhanced_dashboard.html')
 
-@app.route('/athlete/dashboard')
-def athlete_dashboard():
-    return render_template('athlete_dashboard.html')
+@app.route('/child/dashboard')
+@require_auth
+def child_dashboard():
+    user = get_current_user()
+    if user['role'] != 'child':
+        return redirect('/')
+    return render_template('child_dashboard.html', user=user)
+
+@app.route('/child/checkin')
+@require_auth
+def child_checkin():
+    user = get_current_user()
+    if user['role'] != 'child' or not user.get('permissions', {}).get('can_checkin'):
+        return redirect('/child/dashboard')
+    return render_template('child_checkin.html', user=user)
+
+@app.route('/child-login', methods=['GET', 'POST'])
+@limiter.limit("10 per minute")
+def child_login():
+    if request.method == 'POST':
+        data = sanitize_input(request.json)
+        
+        if not all(k in data for k in ['name', 'pin']):
+            return jsonify({'error': 'Missing credentials'}), 400
+        
+        users = load_data('users')
+        child = None
+        
+        # Find child by name and PIN
+        for u in users.values():
+            if (u.get('role') == 'child' and 
+                u['name'].lower() == data['name'].lower() and 
+                u.get('pin') == data['pin'].upper()):
+                child = u
+                break
+        
+        if not child:
+            return jsonify({'error': 'Invalid name or PIN'}), 401
+        
+        session['user_id'] = child['id']
+        return jsonify({'status': 'success', 'redirect': '/child/dashboard'})
+    
+    return render_template('child_login.html')
 
 @app.route('/phase2')
 def phase2_features():
@@ -126,11 +340,12 @@ def get_gizmo_config():
 
 @app.route('/api/checkin', methods=['POST'])
 @limiter.limit("10 per minute")
+@require_auth
 def daily_checkin():
     if not request.json:
         return jsonify({'error': 'Invalid JSON'}), 400
     
-    # Sanitize and validate input
+    user = get_current_user()
     data = sanitize_input(request.json)
     
     # Validate required fields and ranges
@@ -142,12 +357,14 @@ def daily_checkin():
         return jsonify({'error': 'Invalid water bottles'}), 400
     
     today = str(date.today())
-    data['user_id'] = str(uuid.uuid4())  # Add unique identifier
+    data['user_id'] = user['id']
+    data['athlete_name'] = user['name']
     data['timestamp'] = datetime.now().isoformat()
     
-    checkins = load_data('checkins')
-    checkins[today] = data
-    save_data('checkins', checkins)
+    # Get user's checkin data
+    user_checkins = get_user_data('checkins')
+    user_checkins[today] = data
+    save_user_data('checkins', user_checkins)
     
     insights = generate_daily_insights(data)
     
@@ -589,16 +806,17 @@ def performance_trends():
 
 @app.route('/api/team-social', methods=['GET', 'POST'])
 @limiter.limit("20 per minute")
+@require_auth
 def team_social():
-    social_data = load_data('team_social')
+    user = get_current_user()
+    family_social = get_user_data('team_social')
     
     if request.method == 'POST':
         if not request.json or 'content' not in request.json:
             return jsonify({'error': 'Invalid post data'}), 400
         
-        # Sanitize content and validate length
         content = sanitize_input(request.json.get('content', ''))
-        if len(content) > 500:  # Limit post length
+        if len(content) > 500:
             return jsonify({'error': 'Post too long'}), 400
         if len(content.strip()) == 0:
             return jsonify({'error': 'Empty post'}), 400
@@ -607,22 +825,22 @@ def team_social():
             'id': str(uuid.uuid4()),
             'content': content,
             'timestamp': datetime.now().isoformat(),
-            'author': 'Aadhi',
+            'author': user['name'],
             'likes': 0
         }
         
-        social_data[post['id']] = post
-        save_data('team_social', social_data)
+        family_social[post['id']] = post
+        save_user_data('team_social', family_social)
         return jsonify({'status': 'posted', 'post_id': post['id']})
     
-    # Get recent posts
-    recent_posts = list(social_data.values())[-10:]
+    recent_posts = list(family_social.values())[-10:]
     return jsonify({'posts': recent_posts})
 
 @app.route('/api/recovery-optimizer')
+@require_auth
 def recovery_optimizer():
-    checkins = load_data('checkins')
-    recent_data = list(checkins.values())[-7:]  # Last week
+    user_checkins = get_user_data('checkins')
+    recent_data = list(user_checkins.values())[-7:]  # Last week
     
     if not recent_data:
         return jsonify({'status': 'no_data'})
@@ -653,9 +871,10 @@ def recovery_optimizer():
     })
 
 @app.route('/api/analytics')
+@require_auth
 def get_analytics():
-    checkins = load_data('checkins')
-    recent_data = list(checkins.values())[-7:]  # Last 7 days
+    user_checkins = get_user_data('checkins')
+    recent_data = list(user_checkins.values())[-7:]  # Last 7 days
     
     if not recent_data:
         return jsonify({'predictability_index': 0, 'status': 'No data'})
@@ -712,86 +931,20 @@ def get_analytics():
         }
     })
 
-# Initialize sample data
-def init_sample_data():
-    from datetime import datetime, timedelta
+# Initialize empty data structure
+def init_data_structure():
+    # Ensure data directory exists
+    if not os.path.exists(DATA_DIR):
+        os.makedirs(DATA_DIR)
     
-    # Sample goals
-    goals = load_data('goals')
-    if not goals:
-        sample_goals = {
-            '1': {
-                'id': 1,
-                'title': 'Improve Sleep Consistency',
-                'target': '9 hours daily',
-                'deadline': '2024-02-01',
-                'progress': 75,
-                'status': 'active',
-                'created_date': '2024-01-01'
-            },
-            '2': {
-                'id': 2,
-                'title': 'Training Consistency',
-                'target': '90% completion rate',
-                'deadline': '2024-01-31',
-                'progress': 85,
-                'status': 'active',
-                'created_date': '2024-01-01'
-            }
-        }
-        save_data('goals', sample_goals)
-    
-    # Sample competitions
-    competitions = load_data('competitions')
-    if not competitions:
-        future_date = (datetime.now() + timedelta(days=14)).strftime('%Y-%m-%d')
-        sample_competitions = {
-            '1': {
-                'id': 1,
-                'name': 'Regional Championship',
-                'date': future_date,
-                'type': 'tournament',
-                'importance': 'high'
-            }
-        }
-        save_data('competitions', sample_competitions)
-    
-    # Sample Aadhi's Gizmo data
-    aadhi_gizmo = load_data('aadhi_gizmo')
-    if not aadhi_gizmo:
-        sample_aadhi_gizmo = {
-            str(date.today()): {
-                'device_id': 'AADHI_GIZMO_001',
-                'location_data': [[37.7749, -122.4194]],  # Training location
-                'activity_minutes': 95,
-                'screen_time': 35,
-                'parent_messages': 2,
-                'emergency_alerts': False,
-                'battery_level': 82,
-                'safe_zones': 'safe',
-                'steps_count': 8500,
-                'heart_rate': 72,
-                'training_location': 'soccer_field'
-            }
-        }
-        save_data('aadhi_gizmo', sample_aadhi_gizmo)
-    
-    # Sample team social data
-    team_social = load_data('team_social')
-    if not team_social:
-        sample_social = {
-            '1': {
-                'id': 1,
-                'content': 'Great practice today! Feeling ready for the tournament 🏆',
-                'author': 'Aadhi',
-                'timestamp': str(datetime.now()),
-                'likes': 5
-            }
-        }
-        save_data('team_social', sample_social)
+    # Initialize empty data files if they don't exist
+    data_files = ['users', 'checkins', 'goals', 'competitions', 'team_social', 'growth', 'wearables']
+    for filename in data_files:
+        if not os.path.exists(os.path.join(DATA_DIR, f'{filename}.json')):
+            save_data(filename, {})
 
 if __name__ == '__main__':
-    init_sample_data()
+    init_data_structure()
     import os
     port = int(os.environ.get('PORT', 5001))
     app.run(host='0.0.0.0', port=port, debug=False)
