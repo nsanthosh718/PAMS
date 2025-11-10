@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, session, redirect
+from flask import Flask, render_template, request, jsonify, session, redirect, send_from_directory
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from flask_talisman import Talisman
@@ -13,6 +13,19 @@ from functools import wraps
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
+
+# Static files route
+@app.route('/static/<path:filename>')
+def static_files(filename):
+    return send_from_directory('static', filename)
+
+@app.route('/favicon.ico')
+def favicon():
+    return '', 204
+
+@app.route('/health')
+def health_check():
+    return jsonify({'status': 'healthy', 'message': 'PAMS is running'}), 200
 
 # Security middleware
 Talisman(app, force_https=False)  # Set to True in production
