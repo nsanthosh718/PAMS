@@ -17,8 +17,8 @@ app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
 # Security middleware
 Talisman(app, force_https=False)  # Set to True in production
 limiter = Limiter(
-    app,
     key_func=get_remote_address,
+    app=app,
     default_limits=["200 per day", "50 per hour"]
 )
 
