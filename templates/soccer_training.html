@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PAMS - Soccer Training Hub</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background: #667eea; min-height: 100vh; padding: 20px; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .header { background: #2c3e50; color: white; padding: 25px; border-radius: 10px; margin-bottom: 25px; text-align: center; }
+        .training-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin-bottom: 25px; }
+        .training-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .card-title { color: #2c3e50; font-size: 18px; font-weight: bold; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        .skill-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin: 15px 0; }
+        .skill-item { background: #f8f9fa; padding: 10px; border-radius: 6px; text-align: center; }
+        .rating-stars { display: flex; gap: 5px; justify-content: center; margin-top: 5px; }
+        .star { font-size: 20px; cursor: pointer; color: #ddd; }
+        .star.active { color: #f39c12; }
+        .btn { padding: 12px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-decoration: none; display: inline-block; color: white; margin: 5px; }
+        .btn-primary { background: #3498db; }
+        .btn-success { background: #27ae60; }
+        .btn-warning { background: #f39c12; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .session-log { background: #e8f5e8; padding: 15px; border-radius: 8px; margin: 10px 0; border-left: 4px solid #27ae60; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚽ Soccer Training Hub</h1>
+            <p>Track your development like a professional player</p>
+        </div>
+
+        <div class="training-grid">
+            <div class="training-card">
+                <div class="card-title">📝 Log Training Session</div>
+                <form id="trainingForm">
+                    <div class="form-group">
+                        <label>Session Type</label>
+                        <select id="sessionType" required>
+                            <option value="">Select...</option>
+                            <option value="technical">Technical Skills</option>
+                            <option value="physical">Physical Training</option>
+                            <option value="tactical">Tactical Work</option>
+                            <option value="match">Match Play</option>
+                            <option value="recovery">Recovery Session</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Duration (minutes)</label>
+                        <input type="number" id="duration" min="15" max="180" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Skills Practiced (select multiple)</label>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 5px; margin-top: 5px;">
+                            <label><input type="checkbox" value="passing"> Passing</label>
+                            <label><input type="checkbox" value="shooting"> Shooting</label>
+                            <label><input type="checkbox" value="dribbling"> Dribbling</label>
+                            <label><input type="checkbox" value="defending"> Defending</label>
+                            <label><input type="checkbox" value="heading"> Heading</label>
+                            <label><input type="checkbox" value="crossing"> Crossing</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Session Rating</label>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                            <div>
+                                <small>Technical</small>
+                                <div class="rating-stars" data-rating="technical">
+                                    <span class="star" data-value="1">⭐</span>
+                                    <span class="star" data-value="2">⭐</span>
+                                    <span class="star" data-value="3">⭐</span>
+                                    <span class="star" data-value="4">⭐</span>
+                                    <span class="star" data-value="5">⭐</span>
+                                </div>
+                            </div>
+                            <div>
+                                <small>Physical</small>
+                                <div class="rating-stars" data-rating="physical">
+                                    <span class="star" data-value="1">⭐</span>
+                                    <span class="star" data-value="2">⭐</span>
+                                    <span class="star" data-value="3">⭐</span>
+                                    <span class="star" data-value="4">⭐</span>
+                                    <span class="star" data-value="5">⭐</span>
+                                </div>
+                            </div>
+                            <div>
+                                <small>Mental</small>
+                                <div class="rating-stars" data-rating="mental">
+                                    <span class="star" data-value="1">⭐</span>
+                                    <span class="star" data-value="2">⭐</span>
+                                    <span class="star" data-value="3">⭐</span>
+                                    <span class="star" data-value="4">⭐</span>
+                                    <span class="star" data-value="5">⭐</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea id="notes" rows="3" placeholder="How did the session go? What did you learn?"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-success">📊 Log Session</button>
+                </form>
+            </div>
+
+            <div class="training-card">
+                <div class="card-title">📈 Recent Sessions</div>
+                <div id="recentSessions">Loading...</div>
+            </div>
+
+            <div class="training-card">
+                <div class="card-title">🎯 Weekly Focus</div>
+                <div id="weeklyFocus">
+                    <div class="skill-item">
+                        <strong>This Week's Priority</strong>
+                        <p>First Touch & Ball Control</p>
+                        <small>Practice receiving the ball under pressure</small>
+                    </div>
+                    <div style="margin-top: 15px;">
+                        <strong>Recommended Drills:</strong>
+                        <ul style="margin: 10px 0; padding-left: 20px;">
+                            <li>Wall passes (100 touches)</li>
+                            <li>Cone weaving with both feet</li>
+                            <li>1v1 in tight spaces</li>
+                            <li>Juggling progression</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin-top: 25px;">
+            <a href="/barca-academy" class="btn btn-warning">🏆 Barcelona Academy Program</a>
+            <a href="/parent" class="btn btn-primary">← Back to Dashboard</a>
+        </div>
+    </div>
+
+    <script>
+        let ratings = { technical: 0, physical: 0, mental: 0 };
+
+        // Rating system
+        document.querySelectorAll('.rating-stars').forEach(ratingGroup => {
+            const ratingType = ratingGroup.dataset.rating;
+            ratingGroup.querySelectorAll('.star').forEach(star => {
+                star.addEventListener('click', () => {
+                    const value = parseInt(star.dataset.value);
+                    ratings[ratingType] = value;
+                    
+                    // Update visual stars
+                    ratingGroup.querySelectorAll('.star').forEach((s, index) => {
+                        s.classList.toggle('active', index < value);
+                    });
+                });
+            });
+        });
+
+        // Form submission
+        document.getElementById('trainingForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const skillsChecked = Array.from(document.querySelectorAll('input[type="checkbox"]:checked'))
+                .map(cb => cb.value);
+            
+            const formData = {
+                session_type: document.getElementById('sessionType').value,
+                duration: parseInt(document.getElementById('duration').value),
+                skills_practiced: skillsChecked,
+                technical_rating: ratings.technical,
+                physical_rating: ratings.physical,
+                mental_rating: ratings.mental,
+                notes: document.getElementById('notes').value
+            };
+
+            try {
+                const response = await fetch('/api/soccer-training', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(formData)
+                });
+
+                if (response.ok) {
+                    alert('✅ Training session logged successfully!');
+                    document.getElementById('trainingForm').reset();
+                    ratings = { technical: 0, physical: 0, mental: 0 };
+                    document.querySelectorAll('.star').forEach(s => s.classList.remove('active'));
+                    loadRecentSessions();
+                } else {
+                    alert('❌ Failed to log session. Please try again.');
+                }
+            } catch (error) {
+                alert('❌ Error logging session. Please try again.');
+            }
+        });
+
+        async function loadRecentSessions() {
+            try {
+                const response = await fetch('/api/soccer-training');
+                const data = await response.json();
+                
+                if (data.sessions && data.sessions.length > 0) {
+                    const sessionsHtml = data.sessions.slice(-5).reverse().map(session => `
+                        <div class="session-log">
+                            <strong>${session.session_type.toUpperCase()}</strong> - ${session.duration} min<br>
+                            <small>Skills: ${session.skills_practiced.join(', ')}</small><br>
+                            <small>Ratings: T:${session.technical_rating} P:${session.physical_rating} M:${session.mental_rating}</small>
+                        </div>
+                    `).join('');
+                    
+                    document.getElementById('recentSessions').innerHTML = sessionsHtml;
+                } else {
+                    document.getElementById('recentSessions').innerHTML = '<p>No training sessions logged yet.</p>';
+                }
+            } catch (error) {
+                document.getElementById('recentSessions').innerHTML = '<p>Error loading sessions.</p>';
+            }
+        }
+
+        loadRecentSessions();
+    </script>
+</body>
+</html>

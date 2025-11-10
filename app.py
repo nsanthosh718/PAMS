@@ -362,6 +362,16 @@ def coach_communication():
 def activity_import_page():
     return render_template('activity_import.html')
 
+@app.route('/soccer-training')
+@require_auth
+def soccer_training():
+    return render_template('soccer_training.html')
+
+@app.route('/barca-academy')
+@require_auth
+def barca_academy():
+    return render_template('barca_academy.html')
+
 @app.route('/advanced-analytics')
 def advanced_analytics_page():
     return render_template('advanced_analytics.html')
@@ -633,6 +643,128 @@ def wearable_sync():
     
     return jsonify({'status': 'synced', 'data_points': len(wearable_data)})
 
+@app.route('/api/soccer-training', methods=['GET', 'POST'])
+@limiter.limit("20 per minute")
+@require_auth
+def soccer_training_api():
+    user = get_current_user()
+    
+    if request.method == 'POST':
+        data = sanitize_input(request.json)
+        today = str(date.today())
+        
+        training_session = {
+            'date': today,
+            'session_type': data.get('session_type'),
+            'duration': int(data.get('duration', 0)),
+            'skills_practiced': data.get('skills_practiced', []),
+            'technical_rating': int(data.get('technical_rating', 0)),
+            'physical_rating': int(data.get('physical_rating', 0)),
+            'mental_rating': int(data.get('mental_rating', 0)),
+            'notes': data.get('notes', ''),
+            'timestamp': datetime.now().isoformat()
+        }
+        
+        user_training = get_user_data('soccer_training')
+        user_training[today] = training_session
+        save_user_data('soccer_training', user_training)
+        
+        return jsonify({'status': 'success', 'session_id': today})
+    
+    # GET - return recent training sessions
+    user_training = get_user_data('soccer_training')
+    recent_sessions = list(user_training.values())[-7:]
+    
+    return jsonify({'sessions': recent_sessions})
+
+@app.route('/api/barca-program')
+@require_auth
+def get_barca_program():
+    user = get_current_user()
+    age = user.get('age', 12) if user.get('role') == 'child' else 12
+    
+    # Barcelona La Masia training methodology by age
+    if age <= 10:
+        program = {
+            'focus': 'Fun & Ball Mastery',
+            'sessions_per_week': 3,
+            'session_duration': 60,
+            'key_skills': ['Ball Control', 'Dribbling', 'Coordination', 'Basic Passing'],
+            'weekly_plan': {
+                'Monday': {'type': 'Technical', 'focus': 'Ball Mastery', 'drills': ['Juggling', 'Cone Dribbling', '1v1 Games']},
+                'Wednesday': {'type': 'Physical', 'focus': 'Coordination', 'drills': ['Agility Ladders', 'Balance Games', 'Running with Ball']},
+                'Friday': {'type': 'Tactical', 'focus': 'Small Games', 'drills': ['3v3', '4v4', 'Possession Games']}
+            }
+        }
+    elif age <= 14:
+        program = {
+            'focus': 'Technical Excellence',
+            'sessions_per_week': 4,
+            'session_duration': 75,
+            'key_skills': ['Passing Accuracy', 'First Touch', 'Shooting', 'Tactical Awareness'],
+            'weekly_plan': {
+                'Monday': {'type': 'Technical', 'focus': 'Passing & Control', 'drills': ['Rondo 4v2', 'Wall Passes', 'First Touch']},
+                'Tuesday': {'type': 'Physical', 'focus': 'Speed & Agility', 'drills': ['Sprint Intervals', 'Plyometrics', 'Core Work']},
+                'Thursday': {'type': 'Technical', 'focus': 'Shooting & Finishing', 'drills': ['1v1 vs GK', 'Crossing & Finishing', 'Volleys']},
+                'Saturday': {'type': 'Tactical', 'focus': 'Game Situations', 'drills': ['7v7', '9v9', 'Set Pieces']}
+            }
+        }
+    else:
+        program = {
+            'focus': 'Elite Development',
+            'sessions_per_week': 5,
+            'session_duration': 90,
+            'key_skills': ['Decision Making', 'Positional Play', 'Leadership', 'Match Intelligence'],
+            'weekly_plan': {
+                'Monday': {'type': 'Technical', 'focus': 'Advanced Passing', 'drills': ['Rondo 6v3', 'Long Passing', 'Through Balls']},
+                'Tuesday': {'type': 'Physical', 'focus': 'Strength & Power', 'drills': ['Weight Training', 'Explosive Movements', 'Injury Prevention']},
+                'Wednesday': {'type': 'Tactical', 'focus': 'Positional Play', 'drills': ['11v11', 'Formation Work', 'Pressing Triggers']},
+                'Friday': {'type': 'Technical', 'focus': 'Finishing & Creativity', 'drills': ['Complex Finishing', 'Free Kicks', 'Skill Moves']},
+                'Sunday': {'type': 'Match', 'focus': 'Competition', 'drills': ['Match Play', 'Video Analysis', 'Recovery']}
+            }
+        }
+    
+    return jsonify(program)
+
+@app.route('/api/skill-assessment', methods=['POST'])
+@limiter.limit("10 per minute")
+@require_auth
+def skill_assessment():
+    user = get_current_user()
+    data = sanitize_input(request.json)
+    
+    assessment = {
+        'date': str(date.today()),
+        'technical_skills': {
+            'ball_control': int(data.get('ball_control', 0)),
+            'passing': int(data.get('passing', 0)),
+            'shooting': int(data.get('shooting', 0)),
+            'dribbling': int(data.get('dribbling', 0)),
+            'heading': int(data.get('heading', 0))
+        },
+        'physical_attributes': {
+            'speed': int(data.get('speed', 0)),
+            'agility': int(data.get('agility', 0)),
+            'strength': int(data.get('strength', 0)),
+            'endurance': int(data.get('endurance', 0))
+        },
+        'mental_aspects': {
+            'decision_making': int(data.get('decision_making', 0)),
+            'game_intelligence': int(data.get('game_intelligence', 0)),
+            'leadership': int(data.get('leadership', 0)),
+            'composure': int(data.get('composure', 0))
+        },
+        'assessor': data.get('assessor', 'Self'),
+        'notes': data.get('notes', ''),
+        'timestamp': datetime.now().isoformat()
+    }
+    
+    user_assessments = get_user_data('skill_assessments')
+    user_assessments[str(date.today())] = assessment
+    save_user_data('skill_assessments', user_assessments)
+    
+    return jsonify({'status': 'success', 'assessment_id': str(date.today())})
+
 @app.route('/api/activity-stats')
 @require_auth
 def get_activity_stats():
@@ -887,7 +1019,7 @@ def init_data_structure():
         os.makedirs(DATA_DIR)
     
     # Initialize empty data files if they don't exist
-    data_files = ['users', 'checkins', 'goals', 'competitions', 'team_social', 'growth', 'wearables', 'activity_imports']
+    data_files = ['users', 'checkins', 'goals', 'competitions', 'team_social', 'growth', 'wearables', 'activity_imports', 'soccer_training', 'skill_assessments']
     for filename in data_files:
         if not os.path.exists(os.path.join(DATA_DIR, f'{filename}.json')):
             save_data(filename, {})
