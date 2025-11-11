@@ -71,12 +71,47 @@
             <h3>📅 Smart Schedule</h3>
             <div id="schedule"></div>
             <div style="margin-top: 25px; text-align: center;">
-                <a href="/parent/enhanced" class="nav-btn purple-btn">📈 Enhanced Analytics</a>
-                <a href="/soccer-training" class="nav-btn" style="background: linear-gradient(135deg, #28a745, #20c997); color: white;">⚽ Soccer Training</a>
-                <a href="/activity-import" class="nav-btn" style="background: linear-gradient(135deg, #28a745, #20c997); color: white;">📱 Activity Import</a>
-                <a href="/phase2" class="nav-btn" style="background: linear-gradient(135deg, #f39c12, #e67e22); color: white;">🚀 Phase 2 Features</a>
-                <a href="/parent/athlete-view" class="nav-btn danger-btn">⚽ Kids Check-in Interface</a>
-                <a href="/logout" class="nav-btn secondary-btn">🚪 Logout</a>
+                <div class="nav-dropdown">
+                    <button class="dropdown-btn">📈 Analytics ▼</button>
+                    <div class="dropdown-content">
+                        <a href="/parent/enhanced">📈 Enhanced Analytics</a>
+                        <a href="/advanced-analytics">📊 Advanced Analytics</a>
+                    </div>
+                </div>
+                
+                <div class="nav-dropdown">
+                    <button class="dropdown-btn">⚽ Training ▼</button>
+                    <div class="dropdown-content">
+                        <a href="/soccer-training">⚽ Soccer Training</a>
+                        <a href="/barca-academy">🏆 Barcelona Academy</a>
+                        <a href="/activity-import">📱 Activity Import</a>
+                    </div>
+                </div>
+                
+                <div class="nav-dropdown">
+                    <button class="dropdown-btn">🚀 Features ▼</button>
+                    <div class="dropdown-content">
+                        <a href="/phase2">🚀 Phase 2 Features</a>
+                        <a href="/coach-communication">💬 Coach Communication</a>
+                        <a href="/mobile">📱 Mobile App</a>
+                    </div>
+                </div>
+                
+                <div class="nav-dropdown">
+                    <button class="dropdown-btn">⚽ Kids ▼</button>
+                    <div class="dropdown-content">
+                        <a href="/parent/athlete-view">⚽ Check-in Interface</a>
+                        <a href="/child-login">🔑 Kids Login</a>
+                    </div>
+                </div>
+                
+                <div class="nav-dropdown">
+                    <button class="dropdown-btn">🚪 Account ▼</button>
+                    <div class="dropdown-content">
+                        <a href="/parent/setup">⚙️ Settings</a>
+                        <a href="/logout">🚪 Logout</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
