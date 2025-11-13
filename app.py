@@ -95,24 +95,48 @@ DATA_DIR = 'data'
 os.makedirs(DATA_DIR, exist_ok=True)
 
 def load_data(filename):
+    # Validate filename to prevent path traversal
+    if not filename.replace('_', '').replace('-', '').isalnum():
+        raise ValueError("Invalid filename")
+    
+    # Sanitize filename
+    filename = os.path.basename(filename)
     path = os.path.join(DATA_DIR, f'{filename}.json')
-    if os.path.exists(path):
-        with open(path, 'r') as f:
-            return json.load(f)
-    return {}
+    
+    # Ensure path is within DATA_DIR
+    real_data_dir = os.path.realpath(DATA_DIR)
+    real_path = os.path.realpath(path)
+    if not real_path.startswith(real_data_dir):
+        raise ValueError("Path traversal attempt detected")
+    
+    try:
+        if os.path.exists(path):
+            with open(path, 'r') as f:
+                return json.load(f)
+        return {}
+    except (IOError, OSError, json.JSONDecodeError) as e:
+        return {}
 
 def save_data(filename, data):
     # Validate filename to prevent path traversal
     if not filename.replace('_', '').replace('-', '').isalnum():
         raise ValueError("Invalid filename")
     
+    # Sanitize filename further
+    filename = os.path.basename(filename)
     path = os.path.join(DATA_DIR, f'{filename}.json')
+    
     # Ensure path is within DATA_DIR
-    if not os.path.abspath(path).startswith(os.path.abspath(DATA_DIR)):
+    real_data_dir = os.path.realpath(DATA_DIR)
+    real_path = os.path.realpath(path)
+    if not real_path.startswith(real_data_dir):
         raise ValueError("Path traversal attempt detected")
     
-    with open(path, 'w') as f:
-        json.dump(data, f, indent=2)
+    try:
+        with open(path, 'w') as f:
+            json.dump(data, f, indent=2)
+    except (IOError, OSError) as e:
+        raise ValueError(f"Failed to save data: {str(e)}")
 
 @app.route('/')
 def home():
@@ -416,11 +440,17 @@ def import_activity_data():
 @limiter.limit("10 per minute")
 @require_auth
 def daily_checkin():
-    if not request.json:
-        return jsonify({'error': 'Invalid JSON'}), 400
-    
-    user = get_current_user()
-    data = sanitize_input(request.json)
+    try:
+        if not request.json:
+            return jsonify({'error': 'Invalid JSON'}), 400
+        
+        user = get_current_user()
+        if not user:
+            return jsonify({'error': 'User not found'}), 401
+            
+        data = sanitize_input(request.json)
+    except Exception as e:
+        return jsonify({'error': 'Invalid request data'}), 400
     
     # Validate required fields and ranges
     if not isinstance(data.get('sleep_hours'), (int, float)) or not (0 <= data.get('sleep_hours', 0) <= 24):
@@ -1028,4 +1058,5 @@ if __name__ == '__main__':
     init_data_structure()
     import os
     port = int(os.environ.get('PORT', 5001))
-    app.run(host='0.0.0.0', port=port, debug=False)
+    debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
+    app.run(host='0.0.0.0', port=port, debug=debug_mode)
